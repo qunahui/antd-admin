@@ -12,6 +12,7 @@ function PrivateRoute({ component: Component, push, auth, app, checkUserSessionS
   //   if(auth.error) {
   //     setOpen(true)
   //   }
+  console.log(rest)
   }
   ,[])
 

@@ -25,7 +25,7 @@ const DashboardLayout = (props) => {
   const renderRoutes = (routes = {}, userRole = '') =>
     routes.map((route) =>
       Component && route.rolesAccess.includes(userRole) ? (
-        <PrivateRoute key={route.key || route.path} {...route} />
+        <PrivateRoute key={window.location.pathname} {...route} />
       ) : null,
     )
 

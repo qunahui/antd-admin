@@ -9,7 +9,6 @@ const routes = [
     name: 'Lessons',
     component: LessonsView,
     rolesAccess: [''],
-    key: window.location.pathname
   },
 ]
 
