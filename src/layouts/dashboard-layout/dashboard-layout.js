@@ -19,7 +19,7 @@ import PageHeader from '../../components/page-header'
 import './dashboard-layout.scss'
 
 const { Content, Sider } = Layout;
-const { SubMenu } = Menu; 
+const { SubMenu } = Menu;
 
 const DashboardLayout = (props) => {
   const renderRoutes = (routes = {}, userRole = '') =>
@@ -29,7 +29,6 @@ const DashboardLayout = (props) => {
       ) : null,
     )
 
-  console.log('Rendering layout......')
 
   return (
     <Layout>
@@ -39,37 +38,37 @@ const DashboardLayout = (props) => {
           height: '100vh',
           position: 'fixed',
           left: 0,
-          }}
+        }}
       >
-      <div className="logo"/>
-      <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-         <SubMenu key="Level" icon={<UserOutlined />} title="Lessons">
+        <div className="logo" />
+        <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
+          <SubMenu key="Level" icon={<UserOutlined />} title="Lessons">
             <Menu.Item key="1"><Link to="/app/lessons/1">Level 1</Link></Menu.Item>
             <Menu.Item key="2"><Link to="/app/lessons/2">Level 2</Link></Menu.Item>
             <Menu.Item key="3"><Link to="/app/lessons/3">Level 3</Link></Menu.Item>
           </SubMenu>
-        <Menu.Item key="4" icon={<VideoCameraOutlined />}>
-          nav 2
-        </Menu.Item>
-        <Menu.Item key="5" icon={<UploadOutlined />}>
-          nav 3
-        </Menu.Item>
-      </Menu>
-    </Sider>
-    <Layout className="site-layout" style={{ marginLeft: 200, height: '100vh' }}>
-      <PageHeader/>
-      <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
-        <div className="site-layout-background" style={{ padding: 24, textAlign: 'center', minHeight: '80vh' }}>
-          <Suspense fallback={<></>}>
-            <Switch>
-              {renderRoutes(routes)}
-              <Redirect to="/404" />
-            </Switch>
-          </Suspense>
-        </div>
-      </Content>
+          <Menu.Item key="4" icon={<VideoCameraOutlined />}>
+            <Link to="/app/lessons/1">Post</Link>
+          </Menu.Item>
+          <Menu.Item key="5" icon={<UploadOutlined />}>
+            nav 3
+          </Menu.Item>
+        </Menu>
+      </Sider>
+      <Layout className="site-layout" style={{ marginLeft: 200, height: '100vh' }}>
+        <PageHeader />
+        <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
+          <div className="site-layout-background" style={{ padding: 24, textAlign: 'center', minHeight: '80vh' }}>
+            <Suspense fallback={<></>}>
+              <Switch>
+                {renderRoutes(routes)}
+                <Redirect to="/404" />
+              </Switch>
+            </Suspense>
+          </div>
+        </Content>
+      </Layout>
     </Layout>
-  </Layout>
   )
 }
 

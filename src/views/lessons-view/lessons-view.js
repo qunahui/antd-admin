@@ -35,7 +35,7 @@ const LessonsView = (props) => {
     async function fetchLessons() {
       try {
         const level = window.location.pathname.split('/').reverse()[0]
-        const result = await request.get(`/api/lessons/getByLevel/${level}`)
+        const result = await request.get(`/api/admin/getByLevel/${level}`)
         if (result.code === 200) {
           const { data } = result
           const tableData = data.map(lesson => ({
