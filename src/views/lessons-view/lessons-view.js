@@ -12,23 +12,23 @@ const LessonsView = (props) => {
   const [dataSource, setDataSource] = React.useState([])
   const columns = [
     {
-      title:'Lesson ID',
-      dataIndex:'lessonID',
-      key:'lessonID',
+      title: 'Lesson ID',
+      dataIndex: 'lessonID',
+      key: 'lessonID',
       width: 150
     },
     {
-      title:'Name',
-      dataIndex:'lessonName',
-      key:'lessonName',
+      title: 'Name',
+      dataIndex: 'lessonName',
+      key: 'lessonName',
       width: 150
     },
     {
-      title:'Image',
-      dataIndex:'lessonImage',
-      key:'lessonImage',
+      title: 'Image',
+      dataIndex: 'lessonImage',
+      key: 'lessonImage',
       width: 150,
-      render: text => <Image src={text} width={100}/>
+      render: text => <Image src={text} width={100} />
     },
   ]
   useEffect(() => {
@@ -36,7 +36,7 @@ const LessonsView = (props) => {
       try {
         const level = window.location.pathname.split('/').reverse()[0]
         const result = await request.get(`/api/lessons/getByLevel/${level}`)
-        if(result.code === 200) {
+        if (result.code === 200) {
           const { data } = result
           const tableData = data.map(lesson => ({
             key: lesson.lessonID,
@@ -47,18 +47,18 @@ const LessonsView = (props) => {
         } else {
           message.error({
             content: 'Something went wrong!',
-            style:{
+            style: {
               position: 'fixed',
               bottom: '10px',
               left: '50%'
             }
           })
         }
-      } catch(e) {
+      } catch (e) {
         console.log(e)
       }
     }
-    
+
     fetchLessons();
   }, [])
 
@@ -70,22 +70,22 @@ const LessonsView = (props) => {
   return (
     <>
       {
-        loading ? 
-        <Row justify="center" align="middle" style={{ width: '100%', height: '80vh'}}>
-          <Space size="middle">
-            <Spin size="large" />
-          </Space>
-        </Row> :
-        <Row style={{ width: '100%', height: '80vh'}} justify="center">
-          <Table 
-            dataSource={dataSource} 
-            columns={columns}
-            pagination={{ 
-              position: ['topRight', 'bottomRight'],
-              pageSize: 10
-            }}
-          />
-        </Row>
+        loading ?
+          <Row justify="center" align="middle" style={{ width: '100%', height: '80vh' }}>
+            <Space size="middle">
+              <Spin size="large" />
+            </Space>
+          </Row> :
+          <Row style={{ width: '100%', height: '80vh' }} justify="center">
+            <Table
+              dataSource={dataSource}
+              columns={columns}
+              pagination={{
+                position: ['topRight', 'bottomRight'],
+                pageSize: 10
+              }}
+            />
+          </Row>
       }
     </>
   )
