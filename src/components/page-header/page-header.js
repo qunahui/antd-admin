@@ -26,15 +26,13 @@ const CustomPageHeader = (props) => {
   return (
     <div className="site-page-header">
       <PageHeader
-        title="Title"
-        subTitle="This is a subtitle"
         extra={[
           <Button key="2"><SettingOutlined /></Button>,
           <Dropdown key="1" overlay={userMenu}>
             <Button type="primary">
               Username <UserOutlined />
             </Button>
-          </Dropdown>  
+          </Dropdown>
         ]}
       />
     </div>

@@ -214,7 +214,7 @@ const PostsView = (props) => {
               <h3>Post Content</h3><p>{modalContent && modalContent.text}</p>
               <h3>Post Owner</h3><p>{modalContent && modalContent.studentName}</p>
               <h3>Post Status</h3>
-              <Tag color={tagColor(modalContent.status)}>
+              <Tag color={tagColor(modalContent.status || '')}>
                 {modalContent.status}
               </Tag>
             </Modal>
