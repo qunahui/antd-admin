@@ -25,7 +25,7 @@ const DashboardLayout = (props) => {
   const renderRoutes = (routes = {}, userRole = '') =>
     routes.map((route) =>
       Component && route.rolesAccess.includes(userRole) ? (
-        <PrivateRoute key={route.key || route.path} {...route} />
+        <PrivateRoute key={window.location.pathname} {...route} />
       ) : null,
     )
 
@@ -48,7 +48,7 @@ const DashboardLayout = (props) => {
             <Menu.Item key="3"><Link to="/app/lessons/3">Level 3</Link></Menu.Item>
           </SubMenu>
           <Menu.Item key="4" icon={<VideoCameraOutlined />}>
-            <Link to="/app/lessons/1">Post</Link>
+            <Link to="/app/posts">Post</Link>
           </Menu.Item>
           <Menu.Item key="5" icon={<UploadOutlined />}>
             nav 3

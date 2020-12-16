@@ -1,6 +1,7 @@
 import React from 'react'
 import { Redirect } from 'react-router-dom'
 const LessonsView = React.lazy(() => import('./views/lessons-view'))
+const PostView = React.lazy(() => import('./views/posts-view'))
 const LoginView = React.lazy(() => import('./views/login-view'))
 
 const routes = [
@@ -9,7 +10,12 @@ const routes = [
     name: 'Lessons',
     component: LessonsView,
     rolesAccess: [''],
-    key: window.location.pathname
+  },
+  {
+    path: '/app/posts',
+    name: 'Posts',
+    component: PostView,
+    rolesAccess: [''],
   },
 ]
 

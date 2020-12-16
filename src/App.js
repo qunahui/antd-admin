@@ -5,7 +5,7 @@ import { createStructuredSelector } from 'reselect';
 
 import 'antd/dist/antd.css';
 
-import ErrorBoundary from './components/error-boundary/error-boundary.component';
+import ErrorBoundary from './components/error-boundary/error-boundary';
 import ScrollToTop from './components/scroll-to-top/scroll-to-top.component';
 
 import { selectCurrentUser } from './redux/user/user.selectors';
