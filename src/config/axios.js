@@ -8,7 +8,7 @@ const request = axios.create()
 
 request.defaults.headers.post['Content-Type'] = 'application/json'
 
-request.defaults.timeout = 5000
+request.defaults.timeout = 60000
 
 const proxy = 'https://cors-anywhere.herokuapp.com/'
 
@@ -48,7 +48,7 @@ const setToken = (token) => {
   request.defaults.headers.common.Authorization = token
 }
 
-setToken("Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYwODA0ODg0OSwiZXhwIjoxNjA4NjUzNjQ5fQ.lF4k3qaD-Mk1xQqkBX4IMb7xcB2_KoyOO8ocTyFdXQ5fE6jv1wGUIiUsFQKmmcEwS-ULtZa6b9IpkBu_JkF0kw")
+setToken("Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYwODEyODgwNywiZXhwIjoxNjA4NzMzNjA3fQ.d5BDyoqoS83-UDrFVJkfi1D_OqYkz_KgsaVGfsy57I8zqJuQF0DFIuH4O00iucqe1f3hdRXpClwtrandem6Png")
 
 export { request, setToken }
 
