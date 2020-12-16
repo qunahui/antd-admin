@@ -15,8 +15,8 @@ const PostsView = (props) => {
   const [dataSource, setDataSource] = React.useState([])
 
   const showModal = (record) => {
-    setModalVisible(true)
     setModalContent(record)
+    setModalVisible(true)
   }
 
   const tagColor = status => {
@@ -183,6 +183,8 @@ const PostsView = (props) => {
     console.log("Parameter: ", filters, sorter)
   }
 
+  console.log(modalContent)
+
   return (
     <>
       {
@@ -205,7 +207,7 @@ const PostsView = (props) => {
             <Modal
               title="Edit"
               visible={isModalVisible}
-              width={1000}
+              width={900}
               onCancel={() => setModalVisible(false)}
               footer={[
                 <Button
@@ -229,14 +231,24 @@ const PostsView = (props) => {
                 </Button>,
               ]}
             >
-              <h3>Post ID</h3><p>{modalContent && modalContent.id}</p>
-              <h3>Post Title</h3><p>{modalContent && modalContent.title}</p>
-              <h3>Post Content</h3><p>{modalContent && modalContent.text}</p>
-              <h3>Post Owner</h3><p>{modalContent && modalContent.studentName}</p>
-              <h3>Post Status</h3>
-              <Tag color={tagColor(modalContent.status || '')}>
-                {modalContent.status}
-              </Tag>
+              <div
+                style={{ maxHeight: '60vh', overflowY: 'auto' }}
+              >
+                <h3>Post ID</h3><p>{modalContent && modalContent.id}</p>
+                <h3>Post Title</h3><p>{modalContent && modalContent.title}</p>
+                <h3>Post Content</h3><p>{modalContent && modalContent.text}</p>
+                <h3>Attached File</h3>
+                {
+                  modalContent.link ? <video key={modalContent.link} width="320" height="240" controls>
+                    <source src={modalContent.link} type="video/mp4" />
+                  </video> : null
+                }
+                <h3>Post Owner</h3><p>{modalContent && modalContent.studentName}</p>
+                <h3>Post Status</h3>
+                <Tag color={tagColor(modalContent.status || '')}>
+                  {modalContent.status}
+                </Tag>
+              </div>
             </Modal>
           </Row>
       }
