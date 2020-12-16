@@ -48,7 +48,6 @@ const setToken = (token) => {
   request.defaults.headers.common.Authorization = token
 }
 
-setToken("Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTYwODEyODgwNywiZXhwIjoxNjA4NzMzNjA3fQ.d5BDyoqoS83-UDrFVJkfi1D_OqYkz_KgsaVGfsy57I8zqJuQF0DFIuH4O00iucqe1f3hdRXpClwtrandem6Png")
 
 export { request, setToken }
 

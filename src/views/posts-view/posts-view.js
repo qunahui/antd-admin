@@ -206,12 +206,14 @@ const PostsView = (props) => {
               title="Edit"
               visible={isModalVisible}
               width={1000}
+              onCancel={() => setModalVisible(false)}
               footer={[
                 <Button
                   key="ban"
                   danger
                   loading={isModalLoading}
                   onClick={handleBan}
+                  disabled={modalContent.status === 'UNAPPROVED'}
                 >
                   Ban
                 </Button>,
@@ -221,6 +223,7 @@ const PostsView = (props) => {
                   loading={isModalLoading}
                   onClick={handleApprove}
                   style={{ color: '#52c41a', borderColor: '#b7eb8f' }}
+                  disabled={modalContent.status ? modalContent.status.trim() === 'APPROVED' : ''}
                 >
                   Approve
                 </Button>,

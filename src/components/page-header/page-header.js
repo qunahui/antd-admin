@@ -1,4 +1,6 @@
 import React from 'react'
+import { connect } from 'react-redux'
+import Creators from '../../redux/user'
 import { PageHeader, Button, Dropdown, Menu, message } from 'antd';
 
 import {
@@ -9,20 +11,16 @@ import {
 
 import './page-header.scss'
 
-const handleMenuClick = (e) => {
-  message.info('Clicked')
-  console.log('click', e);
-}
-
-const userMenu = (
-  <Menu onClick={handleMenuClick}>
-    <Menu.Item key="1" icon={<LogoutOutlined />}>
-      Sign out
-    </Menu.Item>
-  </Menu>
-);
-
 const CustomPageHeader = (props) => {
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="1" icon={<LogoutOutlined />} onClick={() => props.signOut()}>
+        Sign out
+      </Menu.Item>
+    </Menu>
+  );
+
+
   return (
     <div className="site-page-header">
       <PageHeader
@@ -39,4 +37,8 @@ const CustomPageHeader = (props) => {
   )
 }
 
-export default CustomPageHeader
+export default connect(state => ({
+
+}), dispatch => ({
+  signOut: () => dispatch(Creators.signOut())
+}))(CustomPageHeader)
