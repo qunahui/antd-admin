@@ -9,6 +9,7 @@ import { Spin, Space, Row, Table, message, Image, Tag, Modal, Button } from 'ant
 
 const PostsView = (props) => {
   const [isModalVisible, setModalVisible] = React.useState(false)
+  const [isModalLoading, setModalLoading] = React.useState(false)
   const [modalContent, setModalContent] = React.useState({})
   const [loading, setLoading] = React.useState(true)
   const [dataSource, setDataSource] = React.useState([])
@@ -112,11 +113,20 @@ const PostsView = (props) => {
   const handleBan = () => {
     async function changeStatus() {
       try {
+        setModalLoading(true)
         const result = await request.put(`/api/admin/${modalContent.id}/changeStatus/UNAPPROVED`)
         if (result.code === 200) {
-          setModalVisible(false)
+          setDataSource(() =>
+            dataSource.map(row => {
+              if (row.id === modalContent.id) {
+                row.status = 'UNAPPROVED'
+              }
+              return row
+            })
+          )
           console.log("change success")
-
+          setModalLoading(false)
+          setModalVisible(false)
         } else {
           message.error({
             content: 'Something went wrong!',
@@ -137,10 +147,20 @@ const PostsView = (props) => {
   const handleApprove = () => {
     async function changeStatus() {
       try {
+        setModalLoading(true)
         const result = await request.put(`/api/admin/${modalContent.id}/changeStatus/APPROVED`)
         if (result.code === 200) {
-          setModalVisible(false)
+          setDataSource(() =>
+            dataSource.map(row => {
+              if (row.id === modalContent.id) {
+                row.status = 'APPROVED'
+              }
+              return row
+            })
+          )
           console.log("change success")
+          setModalLoading(false)
+          setModalVisible(false)
         } else {
           message.error({
             content: 'Something went wrong!',
@@ -185,16 +205,12 @@ const PostsView = (props) => {
             <Modal
               title="Edit"
               visible={isModalVisible}
-              onOk={() => setModalVisible(false)}
-              onCancel={() => setModalVisible(false)}
               width={1000}
               footer={[
-                <Button key="back">
-                  Back
-                </Button>,
                 <Button
                   key="ban"
                   danger
+                  loading={isModalLoading}
                   onClick={handleBan}
                 >
                   Ban
@@ -202,6 +218,7 @@ const PostsView = (props) => {
                 <Button
                   key="approve"
                   default
+                  loading={isModalLoading}
                   onClick={handleApprove}
                   style={{ color: '#52c41a', borderColor: '#b7eb8f' }}
                 >
