@@ -183,8 +183,6 @@ const PostsView = (props) => {
     console.log("Parameter: ", filters, sorter)
   }
 
-  console.log(modalContent)
-
   return (
     <>
       {
