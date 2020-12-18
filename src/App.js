@@ -8,7 +8,7 @@ import 'antd/dist/antd.css';
 import ErrorBoundary from './components/error-boundary/error-boundary';
 import ScrollToTop from './components/scroll-to-top/scroll-to-top.component';
 
-import { selectCurrentUser } from './redux/user/user.selectors';
+import Creators from './redux/user'
 
 // load lazy
 const Page404 = React.lazy(() => import('./views/page404'))
@@ -35,11 +35,11 @@ class App extends React.Component {
           <ErrorBoundary>
             <ScrollToTop>
               <Suspense fallback={<></>}>
-              <Switch>
-                <Route exact path="/404" name="Page 404" render={(props) => <Page404 {...props} />} />
-                <Route path="/app" name="Default" render={(props) => <DashboardLayout {...props} />} />
-                <Route path="/" name="Auth" render={(props) => <AuthLayout {...props} />} />
-              </Switch>
+                <Switch>
+                  <Route exact path="/404" name="Page 404" render={(props) => <Page404 {...props} />} />
+                  <Route path="/app" name="Default" render={(props) => <DashboardLayout {...props} />} />
+                  <Route path="/" name="Auth" render={(props) => <AuthLayout {...props} />} />
+                </Switch>
               </Suspense>
             </ScrollToTop>
           </ErrorBoundary>
@@ -49,12 +49,12 @@ class App extends React.Component {
   }
 }
 
-const mapStateToProps = createStructuredSelector({
-  currentUser: selectCurrentUser,
-});
+const mapStateToProps = state => ({
+
+})
 
 const mapDispatchToProps = (dispatch) => ({
-  // checkUserSession: () => dispatch(checkUserSession()),
+  // checkUserSession: () => dispatch(Creators.checkUserSession()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

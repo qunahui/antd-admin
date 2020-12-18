@@ -15,8 +15,8 @@ const PostsView = (props) => {
   const [dataSource, setDataSource] = React.useState([])
 
   const showModal = (record) => {
-    setModalVisible(true)
     setModalContent(record)
+    setModalVisible(true)
   }
 
   const tagColor = status => {
@@ -117,12 +117,12 @@ const PostsView = (props) => {
         const result = await request.put(`/api/admin/${modalContent.id}/changeStatus/UNAPPROVED`)
         if (result.code === 200) {
           setDataSource(() =>
-          dataSource.map(row => {
-            if(row.id === modalContent.id) {
-              row.status = 'UNAPPROVED'
-            }
-            return row
-          })
+            dataSource.map(row => {
+              if (row.id === modalContent.id) {
+                row.status = 'UNAPPROVED'
+              }
+              return row
+            })
           )
           console.log("change success")
           setModalLoading(false)
@@ -151,12 +151,12 @@ const PostsView = (props) => {
         const result = await request.put(`/api/admin/${modalContent.id}/changeStatus/APPROVED`)
         if (result.code === 200) {
           setDataSource(() =>
-          dataSource.map(row => {
-            if(row.id === modalContent.id) {
-              row.status = 'APPROVED'
-            }
-            return row
-          })
+            dataSource.map(row => {
+              if (row.id === modalContent.id) {
+                row.status = 'APPROVED'
+              }
+              return row
+            })
           )
           console.log("change success")
           setModalLoading(false)
@@ -205,18 +205,15 @@ const PostsView = (props) => {
             <Modal
               title="Edit"
               visible={isModalVisible}
-              onOk={() => setModalVisible(false)}
+              width={900}
               onCancel={() => setModalVisible(false)}
-              width={1000}
               footer={[
-                <Button key="back">
-                  Back
-                </Button>,
                 <Button
                   key="ban"
                   danger
                   loading={isModalLoading}
                   onClick={handleBan}
+                  disabled={modalContent.status === 'UNAPPROVED'}
                 >
                   Ban
                 </Button>,
@@ -226,19 +223,30 @@ const PostsView = (props) => {
                   loading={isModalLoading}
                   onClick={handleApprove}
                   style={{ color: '#52c41a', borderColor: '#b7eb8f' }}
+                  disabled={modalContent.status ? modalContent.status.trim() === 'APPROVED' : ''}
                 >
                   Approve
                 </Button>,
               ]}
             >
-              <h3>Post ID</h3><p>{modalContent && modalContent.id}</p>
-              <h3>Post Title</h3><p>{modalContent && modalContent.title}</p>
-              <h3>Post Content</h3><p>{modalContent && modalContent.text}</p>
-              <h3>Post Owner</h3><p>{modalContent && modalContent.studentName}</p>
-              <h3>Post Status</h3>
-              <Tag color={tagColor(modalContent.status || '')}>
-                {modalContent.status}
-              </Tag>
+              <div
+                style={{ maxHeight: '60vh', overflowY: 'auto' }}
+              >
+                <h3>Post ID</h3><p>{modalContent && modalContent.id}</p>
+                <h3>Post Title</h3><p>{modalContent && modalContent.title}</p>
+                <h3>Post Content</h3><p>{modalContent && modalContent.text}</p>
+                <h3>Attached File</h3>
+                {
+                  modalContent.link ? <video key={modalContent.link} width="320" height="240" controls>
+                    <source src={modalContent.link} type="video/mp4" />
+                  </video> : null
+                }
+                <h3>Post Owner</h3><p>{modalContent && modalContent.studentName}</p>
+                <h3>Post Status</h3>
+                <Tag color={tagColor(modalContent.status || '')}>
+                  {modalContent.status}
+                </Tag>
+              </div>
             </Modal>
           </Row>
       }

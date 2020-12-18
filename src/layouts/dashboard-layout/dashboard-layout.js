@@ -43,15 +43,12 @@ const DashboardLayout = (props) => {
         <div className="logo" />
         <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
           <SubMenu key="Level" icon={<UserOutlined />} title="Lessons">
-            <Menu.Item key="1"><Link to="/app/lessons/1">Level 1</Link></Menu.Item>
-            <Menu.Item key="2"><Link to="/app/lessons/2">Level 2</Link></Menu.Item>
-            <Menu.Item key="3"><Link to="/app/lessons/3">Level 3</Link></Menu.Item>
+            <Menu.Item key="1"><Link to="/app/lessons/1">Beginer</Link></Menu.Item>
+            <Menu.Item key="2"><Link to="/app/lessons/2">Intermediate</Link></Menu.Item>
+            <Menu.Item key="3"><Link to="/app/lessons/3">Advance</Link></Menu.Item>
           </SubMenu>
           <Menu.Item key="4" icon={<VideoCameraOutlined />}>
-            <Link to="/app/posts">Post</Link>
-          </Menu.Item>
-          <Menu.Item key="5" icon={<UploadOutlined />}>
-            nav 3
+            <Link to="/app/posts">Posts</Link>
           </Menu.Item>
         </Menu>
       </Sider>
