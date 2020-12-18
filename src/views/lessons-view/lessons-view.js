@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { request } from '../../config/axios'
 
-import { Spin, Space, Row, Table, message, Image, Modal, Tabs, Input, Button } from 'antd';
+import { Spin, Space, Row, Table, message, Image, Modal, Tabs, Input, Button, Form } from 'antd';
 
 const { TabPane } = Tabs;
 
@@ -17,7 +17,6 @@ const LessonsView = (props) => {
   const [quizDataSource, setQuizDataSource] = React.useState([])
   const [isModalVisible, setModalVisible] = React.useState(false)
   const [isVocabularyModalVisible, setVocabularyModalVisible] = React.useState(false)
-  const [modalContent, setModalContent] = React.useState({})
   const [vocabularyModalContent, setVocabularyModalContent] = React.useState({})
   const columns = [
     {
@@ -141,8 +140,7 @@ const LessonsView = (props) => {
   }
 
   const showModal = (record) => {
-    setModalContent({})
-    console.log("modal content: ", modalContent)
+    console.log("voca content: ", vocabularyDataSource)
     setModalVisible(true)
     async function fetchVocabulary() {
       try {
@@ -171,7 +169,7 @@ const LessonsView = (props) => {
     fetchVocabulary();
     async function fetchConversation() {
       try {
-        const result = await request.get(`/api/admin/getConversation/${modalContent.lessonID}`)
+        const result = await request.get(`/api/admin/getConversation/${record.lessonID}`)
         if (result.code === 200) {
           const { data } = result
           const tableData = data.map(conversation => ({
@@ -197,7 +195,7 @@ const LessonsView = (props) => {
     fetchConversation();
     async function fetchQuiz() {
       try {
-        const result = await request.get(`/api/admin/getQuestion/${modalContent.lessonID}`)
+        const result = await request.get(`/api/admin/getQuestion/${record.lessonID}`)
         if (result.code === 200) {
           const { data } = result
           const tableData = data.map(quiz => ({
@@ -224,37 +222,7 @@ const LessonsView = (props) => {
   }
 
   const handleSubmit = () => {
-    // async function updateVocabulary() {
-    //   try {
-    //     setModalLoading(true)
-    //     const result = await request.put(`/api/admin/${modalContent.id}/changeStatus/APPROVED`)
-    //     if (result.code === 200) {
-    //       setDataSource(() =>
-    //         dataSource.map(row => {
-    //           if (row.id === modalContent.id) {
-    //             row.status = 'APPROVED'
-    //           }
-    //           return row
-    //         })
-    //       )
-    //       console.log("change success")
-    //       setModalLoading(false)
-    //       setModalVisible(false)
-    //     } else {
-    //       message.error({
-    //         content: 'Something went wrong!',
-    //         style: {
-    //           position: 'fixed',
-    //           bottom: '10px',
-    //           left: '50%'
-    //         }
-    //       })
-    //     }
-    //   } catch (e) {
-    //     console.log(e)
-    //   }
-    // }
-    // updateVocabulary();
+    
   }
 
   useEffect(() => {
@@ -288,6 +256,10 @@ const LessonsView = (props) => {
     fetchLessons();
   }, [])
 
+  const onVocabularyFormFinish = values => {
+    console.log(values)
+  }
+
   return (
     <>
       {
@@ -311,9 +283,11 @@ const LessonsView = (props) => {
               width={1200}
               onCancel={() => {
                 setModalVisible(false)
+                setVocabularyDataSource([])
+                setQuizDataSource([])
+                setConverastionDataSource([])
               }}
             >
-              {modalContent ?
                 <div
                   style={{ maxHeight: '60vh', overflowY: 'auto' }}
                 >
@@ -337,9 +311,10 @@ const LessonsView = (props) => {
                           footer={[
                             <Button
                               key="submit"
+                              form="vocaForm"
                               default
                               // loading={isModalLoading}
-                              onClick={handleSubmit}
+                              htmlType="submit"
                             >
                               Submit
                           </Button>
@@ -348,12 +323,27 @@ const LessonsView = (props) => {
                           <div
                             style={{ maxHeight: '60vh', overflowY: 'auto' }}
                           >
-                            <h3>Vocabulary ID</h3> <Input value={vocabularyModalContent.id} disabled />
-                            <h3>Vocabulary</h3> <Input value={vocabularyModalContent.vocabulary} />
-                            <h3>Vocabulary Description</h3> <Input value={vocabularyModalContent.description} />
-                            <h3>Vocabulary Image</h3> <Image src={vocabularyModalContent.image} width={300} height={300} />
-                            <h3>Vocabulary Voice</h3> <audio controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg" /></audio>
-                          </div>
+                            <Form
+                              id="vocaForm"
+                              name="vocaForm"
+                              initialValues={{ remember: true }}
+                              onFinish={onVocabularyFormFinish}
+                              onFinishFailed={(e) => console.log(e)}
+                            >
+                              <h3>Vocabulary ID</h3> <Input value={vocabularyModalContent.id} disabled />
+                              <h3>Vocabulary</h3>
+                                <Form.Item
+                                  name="vocabulary"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                >
+                                  <Input value={vocabularyModalContent.vocabulary}/>
+                                </Form.Item>
+                              <Input value={vocabularyModalContent.vocabulary} />
+                              <h3>Vocabulary Description</h3> <Input value={vocabularyModalContent.description} />
+                              <h3>Vocabulary Image</h3> <Image src={vocabularyModalContent.image} width={300} height={300} />
+                              <h3>Vocabulary Voice</h3> <audio key={vocabularyModalContent.id} controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg" /></audio>
+                            </Form>
+                            </div>
                         </Modal>
                       </Row>
                     </TabPane>
@@ -382,7 +372,7 @@ const LessonsView = (props) => {
                       </Row>
                     </TabPane>
                   </Tabs>
-                </div> : null}
+                </div>
             </Modal>
           </Row>
       }
