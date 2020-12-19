@@ -2,10 +2,10 @@ import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { request } from '../../config/axios'
 
-import { Spin, Space, Row, Table, message, Image, Modal, Tabs, Input, Button, Form } from 'antd';
+import { Spin, Space, Row, Table, message, Image, Modal, Tabs, Input, Button, Form, Typography } from 'antd';
 
 const { TabPane } = Tabs;
-
+const { Text } = Typography
 
 // import { getCurrentUser } from '../../utils/firebase'
 
@@ -17,12 +17,16 @@ const LessonsView = (props) => {
   const [quizDataSource, setQuizDataSource] = React.useState([])
   const [isModalVisible, setModalVisible] = React.useState(false)
   const [isVocabularyUpdateModalVisible, setVocabularyUpdateModalVisible] = React.useState(false)
-  const [isConversationUpdateModalVisible, setConversationUpdateModalVisible] = React.useState(false)
   const [isVocabularyCreateModalVisible, setVocabularyCreateModalVisible] = React.useState(false)
+  const [isConversationUpdateModalVisible, setConversationUpdateModalVisible] = React.useState(false)
+  const [isQuizUpdateModalVisible, setQuizUpdateModalVisible] = React.useState(false)
   const [vocabularyModalContent, setVocabularyModalContent] = React.useState({})
   const [conversationModalContent, setConversationModalContent] = React.useState({})
+  const [quizModalContent, setQuizModalContent] = React.useState({})
+  const [isSomethingLoading, setSomethingLoading] = React.useState(false)
   const [vocaForm] = Form.useForm()
   const [conversationForm] = Form.useForm()
+  const [quizForm] = Form.useForm()
   const columns = [
     {
       title: 'Lesson ID',
@@ -144,6 +148,47 @@ const LessonsView = (props) => {
       key: 'question',
       width: 150
     },
+    {
+      title: 'Answer A',
+      dataIndex: 'answer_a',
+      key: 'answer_a',
+      width: 150,
+      render: record => <Text type={record.checkCorrect === true ? 'success' : 'danger'}>{record.optionName}</Text>
+    },
+    {
+      title: 'Answer B',
+      dataIndex: 'answer_b',
+      key: 'answer_b',
+      width: 150,
+      render: record => <Text type={record.checkCorrect === true ? 'success' : 'danger'}>{record.optionName}</Text>
+    },
+    {
+      title: 'Answer C',
+      dataIndex: 'answer_c',
+      key: 'answer_c',
+      width: 150,
+      render: record => <Text type={record.checkCorrect === true ? 'success' : 'danger'}>{record.optionName}</Text>
+    },
+    {
+      title: 'Answer D',
+      dataIndex: 'answer_d',
+      key: 'answer_d',
+      width: 150,
+      render: record => <Text type={record.checkCorrect === true ? 'success' : 'danger'}>{record.optionName}</Text>
+    },
+    {
+      title: 'Action',
+      dataIndex: 'edit',
+      key: 'edit',
+      width: 150,
+      render: (text, record) => {
+        return (
+          <Space size="middle">
+            <button type="primary" onClick={() => showQuizUpdateModal(record)}>Update</button>
+          </Space>
+        )
+      }
+    },
     // {
     //   title: 'Options',
     //   dataIndex: 'options',
@@ -161,9 +206,16 @@ const LessonsView = (props) => {
 
   const showConversationUpdateModal = (record) => {
     console.log(record)
-    vocaForm.setFieldsValue(record)
+    conversationForm.setFieldsValue(record)
     setConversationModalContent(record)
     setConversationUpdateModalVisible(true)
+  }
+
+  const showQuizUpdateModal = (record) => {
+    console.log(record)
+    quizForm.setFieldsValue(record)
+    setQuizModalContent(record)
+    setQuizUpdateModalVisible(true)
   }
 
   const showVocabularyCreateModal = () => {
@@ -229,10 +281,15 @@ const LessonsView = (props) => {
         const result = await request.get(`/api/admin/getQuestion/${record.lessonID}`)
         if (result.code === 200) {
           const { data } = result
-          const tableData = data.map(quiz => ({
-            key: quiz.questionID,
-            ...quiz
-          }))
+          const tableData = data.map(quiz => {
+            quiz.key = quiz.questionID;
+            quiz.answer_a = quiz.options[0]
+            quiz.answer_b = quiz.options[1]
+            quiz.answer_c = quiz.options[2]
+            quiz.answer_d = quiz.options[3]
+            return quiz
+          })
+          console.log(tableData)
           setQuizDataSource(tableData)
           setLoading(false)
         } else {
@@ -285,6 +342,7 @@ const LessonsView = (props) => {
   }, [])
 
   const onVocabularyFormFinish = values => {
+    setSomethingLoading(true)
     async function updateVocabulary() {
       try {
         const result = await request.put(`/api/admin/updateVocabulary`, {
@@ -302,7 +360,20 @@ const LessonsView = (props) => {
 
         })
         if (result.code === 200) {
+          setVocabularyDataSource(() =>
+            vocabularyDataSource.map(row => {
+              if (row.id === vocabularyModalContent.id) {
+                return {
+                  ...row,
+                  ...values
+                }
+              }
+              return row
+            })
+          )
           console.log("success")
+          setSomethingLoading(false)
+          setVocabularyUpdateModalVisible(false)
         } else {
           message.error({
             content: 'Something went wrong!',
@@ -321,6 +392,7 @@ const LessonsView = (props) => {
   }
 
   const onConverastionFormFinish = values => {
+    setSomethingLoading(true)
     async function updateConversation() {
       try {
         const result = await request.put(`/api/admin/updateConversation`, {
@@ -332,7 +404,18 @@ const LessonsView = (props) => {
           "voice_link": values.voice_link
         })
         if (result.code === 200) {
+          setConverastionDataSource(conversationDataSource.map(row => {
+            if(row.id === conversationModalContent.id) {
+              return {
+                ...row,
+                ...values
+              }
+            }
+            return row;
+          }))
           console.log("success")
+          setSomethingLoading(false)
+          setConversationUpdateModalVisible(false)
         } else {
           message.error({
             content: 'Something went wrong!',
@@ -348,6 +431,10 @@ const LessonsView = (props) => {
       }
     }
     updateConversation();
+  }
+
+  const onQuizFormFinish = values => {
+
   }
 
   return (
@@ -377,6 +464,8 @@ const LessonsView = (props) => {
                 setQuizDataSource([])
                 setConverastionDataSource([])
               }}
+              footer={[
+              ]}
             >
               <div
                 style={{ maxHeight: '60vh', overflowY: 'auto' }}
@@ -405,7 +494,7 @@ const LessonsView = (props) => {
                                 key="submit"
                                 form="vocaForm"
                                 default
-                                // loading={isModalLoading}
+                                loading={isSomethingLoading}
                                 htmlType="submit"
                               >
                                 Submit
@@ -496,7 +585,7 @@ const LessonsView = (props) => {
                                 key="submit"
                                 form="conversationForm"
                                 default
-                                // loading={isModalLoading}
+                                loading={isSomethingLoading}
                                 htmlType="submit"
                               >
                                 Submit
@@ -551,7 +640,7 @@ const LessonsView = (props) => {
                                   rules={[{ required: true, message: 'This field is required!' }]}
                                   initialValue={conversationModalContent.voice_link}
                                 >
-                                  <audio key={conversationModalContent.id} controls><source src={conversationModalContent.voice_link} type="audio/mpeg" /></audio>
+                                  <audio key={conversationModalContent.id} controls><source src={conversationModalContent.voice_link && `https://drive.google.com/uc?export=download&id=${conversationModalContent.voice_link.split('/').reverse()[1]}`} type="audio/mpeg" /></audio>
                                 </Form.Item>
                               </Form>
                             </div>
@@ -565,16 +654,107 @@ const LessonsView = (props) => {
                     }
                   </TabPane>
                   <TabPane tab="Quiz" key="tabQuiz">
-                    <Row justify="center">
-                      <Table
-                        dataSource={quizDataSource}
-                        columns={quizColumn}
-                        pagination={{
-                          position: ['bottomRight'],
-                          pageSize: 10
-                        }}
-                      />
-                    </Row>
+                  {
+                      quizDataSource.length > 0 ?
+                        <Row justify="center">
+                          <Table
+                            dataSource={quizDataSource}
+                            columns={quizColumn}
+                            pagination={{
+                              position: ['bottomRight'],
+                              pageSize: 10
+                            }}
+                          />
+                          <Modal
+                            visible={isQuizUpdateModalVisible}
+                            width={900}
+                            onCancel={() => {
+                              setQuizUpdateModalVisible(false)
+                            }}
+                            footer={[
+                              <Button
+                                key="submit"
+                                form="quizForm"
+                                default
+                                loading={isSomethingLoading}
+                                htmlType="submit"
+                              >
+                                Submit
+                          </Button>
+                            ]}
+                          >
+                            <div
+                              style={{ maxHeight: '60vh', overflowY: 'auto' }}
+                            >
+                              <Form
+                                id="quizForm"
+                                name="quizForm"
+                                form={quizForm}
+                                onFinish={onQuizFormFinish}
+                                onFinishFailed={(e) => console.log(e)}
+                              >
+                                <h3>Question ID</h3>
+                                <Form.Item
+                                  name="questionID"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={quizModalContent.questionID}
+                                >
+                                  <Input disabled />
+                                </Form.Item>
+                                <h3>Question </h3>
+                                <Form.Item
+                                  name="question"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={quizModalContent.question}
+                                >
+                                {
+                                  (quizModalContent.quizType === 1) ? 
+                                  <Input/> :
+                                  (quizModalContent.quizType === 2) ? 
+                                  <audio key={quizModalContent.questionID} controls><source src={quizModalContent.question && `https://drive.google.com/uc?export=download&id=${quizModalContent.question.split('/').reverse()[1]}`} type="audio/mpeg" /></audio> :
+                                  (quizModalContent.quizType === 3) ?
+                                  <Image src={quizModalContent && `https://drive.google.com/thumbnail?id=${quizModalContent.question.split('/').reverse()[1]}`} width={300} height={300} />
+                                  : <Input/>                             
+                                }
+                                </Form.Item>
+                                <h3>Quiz ID</h3>
+                                <Form.Item
+                                  name="quizID"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={quizModalContent.quizID}
+                                >
+                                  <Input disabled/>
+                                </Form.Item>
+                                <h3>Quiz type</h3>
+                                <Form.Item
+                                  name="quizType"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={quizModalContent.quizType}
+                                >
+                                  <Input disabled/>
+                                </Form.Item>
+                                {
+                                  quizModalContent && quizModalContent.options.map((option,index) => <div key={option.optionID}>
+                                    <h3>Answer {index+1}  </h3>
+                                    <Form.Item
+                                      name={`option_${index+1}`}
+                                      rules={[{ required: true, message: 'This field is required!' }]}
+                                      initialValue={option.optionName}
+                                    >
+                                      <Input/>
+                                    </Form.Item>
+                                  </div>)
+                                }
+                              </Form>
+                            </div>
+                          </Modal>
+                        </Row> :
+                        <Row justify="center" align="middle" style={{ width: '100%', height: '100%' }}>
+                          <Space size="middle">
+                            <Spin size="large" />
+                          </Space>
+                        </Row>
+                    }
                   </TabPane>
                 </Tabs>
               </div>
