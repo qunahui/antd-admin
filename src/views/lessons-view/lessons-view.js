@@ -89,7 +89,6 @@ const LessonsView = (props) => {
         return (
           <Space size="middle">
             <button type="primary" onClick={() => showVocabularyUpdateModal(record)}>Update</button>
-            <button type="primary" onClick={() => showVocabularyCreateModal()}>Create</button>
           </Space>
         )
       }
