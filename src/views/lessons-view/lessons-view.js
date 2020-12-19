@@ -17,9 +17,12 @@ const LessonsView = (props) => {
   const [quizDataSource, setQuizDataSource] = React.useState([])
   const [isModalVisible, setModalVisible] = React.useState(false)
   const [isVocabularyUpdateModalVisible, setVocabularyUpdateModalVisible] = React.useState(false)
+  const [isConversationUpdateModalVisible, setConversationUpdateModalVisible] = React.useState(false)
   const [isVocabularyCreateModalVisible, setVocabularyCreateModalVisible] = React.useState(false)
   const [vocabularyModalContent, setVocabularyModalContent] = React.useState({})
+  const [conversationModalContent, setConversationModalContent] = React.useState({})
   const [vocaForm] = Form.useForm()
+  const [conversationForm] = Form.useForm()
   const columns = [
     {
       title: 'Lesson ID',
@@ -114,6 +117,19 @@ const LessonsView = (props) => {
       key: 'description',
       width: 300
     },
+    {
+      title: 'Action',
+      dataIndex: 'status',
+      key: 'status',
+      width: 150,
+      render: (text, record) => {
+        return (
+          <Space size="middle">
+            <button type="primary" onClick={() => showConversationUpdateModal(record)}>Update</button>
+          </Space>
+        )
+      }
+    },
     // {
     //   title: 'Image',
     //   dataIndex: 'conversationImage',
@@ -142,6 +158,13 @@ const LessonsView = (props) => {
     vocaForm.setFieldsValue(record)
     setVocabularyModalContent(record)
     setVocabularyUpdateModalVisible(true)
+  }
+
+  const showConversationUpdateModal = (record) => {
+    console.log(record)
+    vocaForm.setFieldsValue(record)
+    setConversationModalContent(record)
+    setConversationUpdateModalVisible(true)
   }
 
   const showVocabularyCreateModal = () => {
@@ -263,11 +286,69 @@ const LessonsView = (props) => {
   }, [])
 
   const onVocabularyFormFinish = values => {
-    const { listVocabulary } = vocabularyModalContent;
-    console.log("Prepared data: ", {
-      ...values,
-      listVocabulary
-    })
+    async function updateVocabulary() {
+      try {
+        const result = await request.put(`/api/admin/updateVocabulary`, {
+          "description": values.description,
+          "id": values.id,
+          "image": values.image,
+          "listVocabulary": [
+            {
+              "id": vocabularyModalContent.listVocabulary[0].id,
+              "lessonID": vocabularyModalContent.listVocabulary[0].lessonID
+            }
+          ],
+          "vocabulary": values.vocabulary,
+          "voice_link": values.voice_link,
+
+        })
+        if (result.code === 200) {
+          console.log("success")
+        } else {
+          message.error({
+            content: 'Something went wrong!',
+            style: {
+              position: 'fixed',
+              bottom: '10px',
+              left: '50%'
+            }
+          })
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    updateVocabulary();
+  }
+
+  const onConverastionFormFinish = values => {
+    async function updateConversation() {
+      try {
+        const result = await request.put(`/api/admin/updateConversation`, {
+          "conversation": values.conversation,
+          "conversationImage": values.converastionImage,
+          "description": values.description,
+          "id": values.id,
+          "lessonID": conversationModalContent.lessonID,
+          "voice_link": values.voice_link
+        })
+        if (result.code === 200) {
+          console.log("success")
+        } else {
+          message.error({
+            content: 'Something went wrong!',
+            style: {
+              position: 'fixed',
+              bottom: '10px',
+              left: '50%'
+            }
+          })
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    updateConversation();
   }
 
   return (
@@ -298,13 +379,13 @@ const LessonsView = (props) => {
                 setConverastionDataSource([])
               }}
             >
-                <div
-                  style={{ maxHeight: '60vh', overflowY: 'auto' }}
-                >
-                  <Tabs defaultActiveKey="tabVocabulary">
-                    <TabPane tab="Vocabulary" key="tabVocabulary">
-                      {
-                        vocabularyDataSource.length > 0 ? 
+              <div
+                style={{ maxHeight: '60vh', overflowY: 'auto' }}
+              >
+                <Tabs defaultActiveKey="tabVocabulary">
+                  <TabPane tab="Vocabulary" key="tabVocabulary">
+                    {
+                      vocabularyDataSource.length > 0 ?
                         <Row justify="center">
                           <Table
                             dataSource={vocabularyDataSource}
@@ -315,110 +396,189 @@ const LessonsView = (props) => {
                             }}
                           />
                           <Modal
-                          visible={isVocabularyUpdateModalVisible}
-                          width={900}
-                          onCancel={() => {
-                            setVocabularyUpdateModalVisible(false)
-                          }}
-                          footer={[
-                            <Button
-                              key="submit"
-                              form="vocaForm"
-                              default
-                              // loading={isModalLoading}
-                              htmlType="submit"
-                            >
-                              Submit
+                            visible={isVocabularyUpdateModalVisible}
+                            width={900}
+                            onCancel={() => {
+                              setVocabularyUpdateModalVisible(false)
+                            }}
+                            footer={[
+                              <Button
+                                key="submit"
+                                form="vocaForm"
+                                default
+                                // loading={isModalLoading}
+                                htmlType="submit"
+                              >
+                                Submit
                           </Button>
-                        ]}
-                      >
-                        <div
-                          style={{ maxHeight: '60vh', overflowY: 'auto' }}
-                        >
-                          <Form
-                            id="vocaForm"
-                            name="vocaForm"
-                            form={vocaForm}
-                            onFinish={onVocabularyFormFinish}
-                            onFinishFailed={(e) => console.log(e)}
+                            ]}
                           >
-                              <h3>Vocabulary ID</h3> 
-                              <Form.Item
-                                name="id"
-                                rules={[{ required: true, message: 'This field is required!' }]}
-                                initialValue={vocabularyModalContent.id}
+                            <div
+                              style={{ maxHeight: '60vh', overflowY: 'auto' }}
+                            >
+                              <Form
+                                id="vocaForm"
+                                name="vocaForm"
+                                form={vocaForm}
+                                onFinish={onVocabularyFormFinish}
+                                onFinishFailed={(e) => console.log(e)}
                               >
-                                <Input disabled/>
-                              </Form.Item>
-                              <h3>Vocabulary</h3>
-                              <Form.Item
-                                name="vocabulary"
-                                rules={[{ required: true, message: 'This field is required!' }]}
-                                initialValue={vocabularyModalContent.vocabulary}
-                              >
-                                <Input/>
-                              </Form.Item>
-                              <h3>Description</h3>
-                              <Form.Item
-                                name="description"
-                                rules={[{ required: true, message: 'This field is required!' }]}
-                                initialValue={vocabularyModalContent.description}
-                              >
-                                <Input/>
-                              </Form.Item>
-                              <h3>Vocabulary Image</h3> 
-                              <Form.Item
-                                name="image"
-                                rules={[{ required: true, message: 'This field is required!' }]}
-                                initialValue={vocabularyModalContent.image}
-                              >
-                                <Image src={vocabularyModalContent.image} width={300} height={300} />
-                              </Form.Item>
-                              <h3>Vocabulary Voice</h3> 
-                              <Form.Item
-                                name="voice_link"
-                                rules={[{ required: true, message: 'This field is required!' }]}
-                                initialValue={vocabularyModalContent.voice_link}
-                              >
-                                <audio key={vocabularyModalContent.id} controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg" /></audio>
-                              </Form.Item>
-                            </Form>
-                          </div>
-                        </Modal>
-                        </Row> : 
+                                <h3>Vocabulary ID</h3>
+                                <Form.Item
+                                  name="id"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.id}
+                                >
+                                  <Input disabled />
+                                </Form.Item>
+                                <h3>Vocabulary</h3>
+                                <Form.Item
+                                  name="vocabulary"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.vocabulary}
+                                >
+                                  <Input />
+                                </Form.Item>
+                                <h3>Description</h3>
+                                <Form.Item
+                                  name="description"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.description}
+                                >
+                                  <Input />
+                                </Form.Item>
+                                <h3>Vocabulary Image</h3>
+                                <Form.Item
+                                  name="image"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.image}
+                                >
+                                  <Image src={vocabularyModalContent.image} width={300} height={300} />
+                                </Form.Item>
+                                <h3>Vocabulary Voice</h3>
+                                <Form.Item
+                                  name="voice_link"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.voice_link}
+                                >
+                                  <audio key={vocabularyModalContent.id} controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg" /></audio>
+                                </Form.Item>
+                              </Form>
+                            </div>
+                          </Modal>
+                        </Row> :
                         <Row justify="center" align="middle" style={{ width: '100%', height: '100%' }}>
                           <Space size="middle">
                             <Spin size="large" />
                           </Space>
                         </Row>
-                      }
-                    </TabPane>
-                    <TabPane tab="Conversation" key="tabConversation">
-                      <Row justify="center">
-                        <Table
-                          dataSource={conversationDataSource}
-                          columns={conversationColumn}
-                          pagination={{
-                            position: ['bottomRight'],
-                            pageSize: 10
-                          }}
-                        />
-                      </Row>
-                    </TabPane>
-                    <TabPane tab="Quiz" key="tabQuiz">
-                      <Row justify="center">
-                        <Table
-                          dataSource={quizDataSource}
-                          columns={quizColumn}
-                          pagination={{
-                            position: ['bottomRight'],
-                            pageSize: 10
-                          }}
-                        />
-                      </Row>
-                    </TabPane>
-                  </Tabs>
-                </div>
+                    }
+                  </TabPane>
+                  <TabPane tab="Conversation" key="tabConversation">
+                    {
+                      conversationDataSource.length > 0 ?
+                        <Row justify="center">
+                          <Table
+                            dataSource={conversationDataSource}
+                            columns={conversationColumn}
+                            pagination={{
+                              position: ['bottomRight'],
+                              pageSize: 10
+                            }}
+                          />
+                          <Modal
+                            visible={isConversationUpdateModalVisible}
+                            width={900}
+                            onCancel={() => {
+                              setConversationUpdateModalVisible(false)
+                            }}
+                            footer={[
+                              <Button
+                                key="submit"
+                                form="conversationForm"
+                                default
+                                // loading={isModalLoading}
+                                htmlType="submit"
+                              >
+                                Submit
+                          </Button>
+                            ]}
+                          >
+                            <div
+                              style={{ maxHeight: '60vh', overflowY: 'auto' }}
+                            >
+                              <Form
+                                id="conversationForm"
+                                name="conversationForm"
+                                form={conversationForm}
+                                onFinish={onConverastionFormFinish}
+                                onFinishFailed={(e) => console.log(e)}
+                              >
+                                <h3>Conversation ID</h3>
+                                <Form.Item
+                                  name="id"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={conversationModalContent.id}
+                                >
+                                  <Input disabled />
+                                </Form.Item>
+                                <h3>Conversation</h3>
+                                <Form.Item
+                                  name="conversation"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={conversationModalContent.conversation}
+                                >
+                                  <Input />
+                                </Form.Item>
+                                <h3>Description</h3>
+                                <Form.Item
+                                  name="description"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={conversationModalContent.description}
+                                >
+                                  <Input />
+                                </Form.Item>
+                                {/* <h3>Conversation Image</h3>
+                                <Form.Item
+                                  name="image"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.image}
+                                >
+                                  <Image src={vocabularyModalContent.image} width={300} height={300} />
+                                </Form.Item> */}
+                                <h3>Conversation Voice</h3>
+                                <Form.Item
+                                  name="voice_link"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={conversationModalContent.voice_link}
+                                >
+                                  <audio key={conversationModalContent.id} controls><source src={conversationModalContent.voice_link} type="audio/mpeg" /></audio>
+                                </Form.Item>
+                              </Form>
+                            </div>
+                          </Modal>
+                        </Row> :
+                        <Row justify="center" align="middle" style={{ width: '100%', height: '100%' }}>
+                          <Space size="middle">
+                            <Spin size="large" />
+                          </Space>
+                        </Row>
+                    }
+                  </TabPane>
+                  <TabPane tab="Quiz" key="tabQuiz">
+                    <Row justify="center">
+                      <Table
+                        dataSource={quizDataSource}
+                        columns={quizColumn}
+                        pagination={{
+                          position: ['bottomRight'],
+                          pageSize: 10
+                        }}
+                      />
+                    </Row>
+                  </TabPane>
+                </Tabs>
+              </div>
             </Modal>
           </Row>
       }
