@@ -16,7 +16,8 @@ const LessonsView = (props) => {
   const [conversationDataSource, setConverastionDataSource] = React.useState([])
   const [quizDataSource, setQuizDataSource] = React.useState([])
   const [isModalVisible, setModalVisible] = React.useState(false)
-  const [isVocabularyModalVisible, setVocabularyModalVisible] = React.useState(false)
+  const [isVocabularyUpdateModalVisible, setVocabularyUpdateModalVisible] = React.useState(false)
+  const [isVocabularyCreateModalVisible, setVocabularyCreateModalVisible] = React.useState(false)
   const [vocabularyModalContent, setVocabularyModalContent] = React.useState({})
   const [vocaForm] = Form.useForm()
   const columns = [
@@ -87,11 +88,12 @@ const LessonsView = (props) => {
       render: (text, record) => {
         return (
           <Space size="middle">
-            <button type="primary" onClick={() => showVocabularyModal(record)}>Edit</button>
+            <button type="primary" onClick={() => showVocabularyUpdateModal(record)}>Update</button>
+            <button type="primary" onClick={() => showVocabularyCreateModal()}>Create</button>
           </Space>
         )
       }
-    }
+    },
   ]
   const conversationColumn = [
     {
@@ -135,11 +137,15 @@ const LessonsView = (props) => {
     // },
   ]
 
-  const showVocabularyModal = (record) => {
+  const showVocabularyUpdateModal = (record) => {
     console.log(record)
     vocaForm.setFieldsValue(record)
     setVocabularyModalContent(record)
-    setVocabularyModalVisible(true)
+    setVocabularyUpdateModalVisible(true)
+  }
+
+  const showVocabularyCreateModal = () => {
+    setVocabularyCreateModalVisible(true)
   }
 
   const showModal = (record) => {
@@ -309,10 +315,10 @@ const LessonsView = (props) => {
                             }}
                           />
                           <Modal
-                          visible={isVocabularyModalVisible}
+                          visible={isVocabularyUpdateModalVisible}
                           width={900}
                           onCancel={() => {
-                            setVocabularyModalVisible(false)
+                            setVocabularyUpdateModalVisible(false)
                           }}
                           footer={[
                             <Button
@@ -324,58 +330,58 @@ const LessonsView = (props) => {
                             >
                               Submit
                           </Button>
-                          ]}
+                        ]}
+                      >
+                        <div
+                          style={{ maxHeight: '60vh', overflowY: 'auto' }}
                         >
-                          <div
-                            style={{ maxHeight: '60vh', overflowY: 'auto' }}
+                          <Form
+                            id="vocaForm"
+                            name="vocaForm"
+                            form={vocaForm}
+                            onFinish={onVocabularyFormFinish}
+                            onFinishFailed={(e) => console.log(e)}
                           >
-                            <Form
-                              id="vocaForm"
-                              name="vocaForm"
-                              form={vocaForm}
-                              onFinish={onVocabularyFormFinish}
-                              onFinishFailed={(e) => console.log(e)}
-                            >
-                                <h3>Vocabulary ID</h3> 
-                                <Form.Item
-                                  name="id"
-                                  rules={[{ required: true, message: 'This field is required!' }]}
-                                  initialValue={vocabularyModalContent.id}
-                                >
-                                  <Input disabled/>
-                                </Form.Item>
-                                <h3>Vocabulary</h3>
-                                <Form.Item
-                                  name="vocabulary"
-                                  rules={[{ required: true, message: 'This field is required!' }]}
-                                  initialValue={vocabularyModalContent.vocabulary}
-                                >
-                                  <Input/>
-                                </Form.Item>
-                                <h3>Description</h3>
-                                <Form.Item
-                                  name="description"
-                                  rules={[{ required: true, message: 'This field is required!' }]}
-                                  initialValue={vocabularyModalContent.description}
-                                >
-                                  <Input/>
-                                </Form.Item>
-                                <h3>Vocabulary Image</h3> 
-                                <Form.Item
-                                  name="image"
-                                  rules={[{ required: true, message: 'This field is required!' }]}
-                                  initialValue={vocabularyModalContent.image}
-                                >
-                                  <Image src={vocabularyModalContent.image} width={300} height={300} />
-                                </Form.Item>
-                                <h3>Vocabulary Voice</h3> 
-                                <Form.Item
-                                  name="voice_link"
-                                  rules={[{ required: true, message: 'This field is required!' }]}
-                                  initialValue={vocabularyModalContent.voice_link}
-                                >
-                                  <audio key={vocabularyModalContent.id} controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg" /></audio>
-                                </Form.Item>
+                              <h3>Vocabulary ID</h3> 
+                              <Form.Item
+                                name="id"
+                                rules={[{ required: true, message: 'This field is required!' }]}
+                                initialValue={vocabularyModalContent.id}
+                              >
+                                <Input disabled/>
+                              </Form.Item>
+                              <h3>Vocabulary</h3>
+                              <Form.Item
+                                name="vocabulary"
+                                rules={[{ required: true, message: 'This field is required!' }]}
+                                initialValue={vocabularyModalContent.vocabulary}
+                              >
+                                <Input/>
+                              </Form.Item>
+                              <h3>Description</h3>
+                              <Form.Item
+                                name="description"
+                                rules={[{ required: true, message: 'This field is required!' }]}
+                                initialValue={vocabularyModalContent.description}
+                              >
+                                <Input/>
+                              </Form.Item>
+                              <h3>Vocabulary Image</h3> 
+                              <Form.Item
+                                name="image"
+                                rules={[{ required: true, message: 'This field is required!' }]}
+                                initialValue={vocabularyModalContent.image}
+                              >
+                                <Image src={vocabularyModalContent.image} width={300} height={300} />
+                              </Form.Item>
+                              <h3>Vocabulary Voice</h3> 
+                              <Form.Item
+                                name="voice_link"
+                                rules={[{ required: true, message: 'This field is required!' }]}
+                                initialValue={vocabularyModalContent.voice_link}
+                              >
+                                <audio key={vocabularyModalContent.id} controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg" /></audio>
+                              </Form.Item>
                             </Form>
                           </div>
                         </Modal>
