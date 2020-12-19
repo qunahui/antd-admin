@@ -18,6 +18,7 @@ const LessonsView = (props) => {
   const [isModalVisible, setModalVisible] = React.useState(false)
   const [isVocabularyModalVisible, setVocabularyModalVisible] = React.useState(false)
   const [vocabularyModalContent, setVocabularyModalContent] = React.useState({})
+  const [vocaForm] = Form.useForm()
   const columns = [
     {
       title: 'Lesson ID',
@@ -135,13 +136,14 @@ const LessonsView = (props) => {
   ]
 
   const showVocabularyModal = (record) => {
+    console.log(record)
+    vocaForm.setFieldsValue(record)
     setVocabularyModalContent(record)
     setVocabularyModalVisible(true)
   }
 
   const showModal = (record) => {
     console.log("voca content: ", vocabularyDataSource)
-    setModalVisible(true)
     async function fetchVocabulary() {
       try {
         const result = await request.get(`/api/admin/getVocabulary/${record.lessonID}`)
@@ -151,6 +153,7 @@ const LessonsView = (props) => {
             key: vocabulary.id,
             ...vocabulary
           }))
+          console.log("Set voca data source")
           setVocabularyDataSource(tableData)
         } else {
           message.error({
@@ -219,10 +222,7 @@ const LessonsView = (props) => {
       }
     }
     fetchQuiz();
-  }
-
-  const handleSubmit = () => {
-    
+    setModalVisible(true)
   }
 
   useEffect(() => {
@@ -257,7 +257,11 @@ const LessonsView = (props) => {
   }, [])
 
   const onVocabularyFormFinish = values => {
-    console.log(values)
+    const { listVocabulary } = vocabularyModalContent;
+    console.log("Prepared data: ", {
+      ...values,
+      listVocabulary
+    })
   }
 
   return (
@@ -293,16 +297,18 @@ const LessonsView = (props) => {
                 >
                   <Tabs defaultActiveKey="tabVocabulary">
                     <TabPane tab="Vocabulary" key="tabVocabulary">
-                      <Row justify="center">
-                        <Table
-                          dataSource={vocabularyDataSource}
-                          columns={vocabularyColumn}
-                          pagination={{
-                            position: ['bottomRight'],
-                            pageSize: 10
-                          }}
-                        />
-                        <Modal
+                      {
+                        vocabularyDataSource.length > 0 ? 
+                        <Row justify="center">
+                          <Table
+                            dataSource={vocabularyDataSource}
+                            columns={vocabularyColumn}
+                            pagination={{
+                              position: ['bottomRight'],
+                              pageSize: 10
+                            }}
+                          />
+                          <Modal
                           visible={isVocabularyModalVisible}
                           width={900}
                           onCancel={() => {
@@ -326,26 +332,60 @@ const LessonsView = (props) => {
                             <Form
                               id="vocaForm"
                               name="vocaForm"
-                              initialValues={{ remember: true }}
+                              form={vocaForm}
                               onFinish={onVocabularyFormFinish}
                               onFinishFailed={(e) => console.log(e)}
                             >
-                              <h3>Vocabulary ID</h3> <Input value={vocabularyModalContent.id} disabled />
-                              <h3>Vocabulary</h3>
+                                <h3>Vocabulary ID</h3> 
+                                <Form.Item
+                                  name="id"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.id}
+                                >
+                                  <Input disabled/>
+                                </Form.Item>
+                                <h3>Vocabulary</h3>
                                 <Form.Item
                                   name="vocabulary"
                                   rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.vocabulary}
                                 >
-                                  <Input value={vocabularyModalContent.vocabulary}/>
+                                  <Input/>
                                 </Form.Item>
-                              <Input value={vocabularyModalContent.vocabulary} />
-                              <h3>Vocabulary Description</h3> <Input value={vocabularyModalContent.description} />
-                              <h3>Vocabulary Image</h3> <Image src={vocabularyModalContent.image} width={300} height={300} />
-                              <h3>Vocabulary Voice</h3> <audio key={vocabularyModalContent.id} controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg" /></audio>
+                                <h3>Description</h3>
+                                <Form.Item
+                                  name="description"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.description}
+                                >
+                                  <Input/>
+                                </Form.Item>
+                                <h3>Vocabulary Image</h3> 
+                                <Form.Item
+                                  name="image"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.image}
+                                >
+                                  <Image src={vocabularyModalContent.image} width={300} height={300} />
+                                </Form.Item>
+                                <h3>Vocabulary Voice</h3> 
+                                <Form.Item
+                                  name="voice_link"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                  initialValue={vocabularyModalContent.voice_link}
+                                >
+                                  <audio key={vocabularyModalContent.id} controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg" /></audio>
+                                </Form.Item>
                             </Form>
-                            </div>
+                          </div>
                         </Modal>
-                      </Row>
+                        </Row> : 
+                        <Row justify="center" align="middle" style={{ width: '100%', height: '100%' }}>
+                          <Space size="middle">
+                            <Spin size="large" />
+                          </Space>
+                        </Row>
+                      }
                     </TabPane>
                     <TabPane tab="Conversation" key="tabConversation">
                       <Row justify="center">
