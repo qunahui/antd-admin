@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { request } from '../../config/axios'
+import { storage } from '../../firebase/firebase.utils'
 
-import { Spin, Space, Row, Table, message, Image, Modal, Tabs, Input, Button, Form, Typography } from 'antd';
-
+import { Spin, Space, Row, Table, message, Image, Modal, Tabs, Input, Button, Form, Typography, Upload } from 'antd';
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 const { TabPane } = Tabs;
 const { Text } = Typography
+
 
 // import { getCurrentUser } from '../../utils/firebase'
 
@@ -21,12 +23,14 @@ const LessonsView = (props) => {
   const [isConversationUpdateModalVisible, setConversationUpdateModalVisible] = React.useState(false)
   const [isQuizUpdateModalVisible, setQuizUpdateModalVisible] = React.useState(false)
   const [vocabularyModalContent, setVocabularyModalContent] = React.useState({})
+  const [vocabularyCreateModalContent, setVocabularyCreateModalContent] = React.useState({})
   const [conversationModalContent, setConversationModalContent] = React.useState({})
   const [quizModalContent, setQuizModalContent] = React.useState({})
   const [isSomethingLoading, setSomethingLoading] = React.useState(false)
   const [vocaForm] = Form.useForm()
   const [conversationForm] = Form.useForm()
   const [quizForm] = Form.useForm()
+  const [currentLesson, setCurrentLesson] = React.useState(-1)
   const columns = [
     {
       title: 'Lesson ID',
@@ -224,6 +228,7 @@ const LessonsView = (props) => {
 
   const showModal = (record) => {
     console.log("voca content: ", vocabularyDataSource)
+    setCurrentLesson(record.lessonID)
     async function fetchVocabulary() {
       try {
         const result = await request.get(`/api/admin/getVocabulary/${record.lessonID}`)
@@ -391,6 +396,16 @@ const LessonsView = (props) => {
     updateVocabulary();
   }
 
+  const onVocabularyCreateFormFinish = async values => {
+    const preparedData = {
+      ...values,
+      ...vocabularyCreateModalContent,
+      id: currentLesson
+    }
+
+    console.log(preparedData)
+  }
+
   const onConverastionFormFinish = values => {
     setSomethingLoading(true)
     async function updateConversation() {
@@ -437,6 +452,69 @@ const LessonsView = (props) => {
 
   }
 
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      message.error('You can only upload JPG/PNG file!');
+    }
+    const isLt1M = file.size / 1024 / 1024 < 1;
+    if (!isLt1M) {
+      message.error('Image must smaller than 1MB!');
+    }
+    return isJpgOrPng && isLt1M;
+  }
+
+  const getBase64 = (img, callback) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => callback(reader.result));
+    reader.readAsDataURL(img);
+  }
+
+  const handleVocaImageChange = info => {
+    if (info.file.status === 'uploading') {
+      return;
+    }
+    if (info.file.status === 'done') {
+      // Get this url from response in real world.
+      getBase64(info.file.originFileObj, imageUrl =>
+        {
+          setVocabularyCreateModalContent({
+           ...vocabularyCreateModalContent,
+           image: imageUrl
+          })
+        }
+      );
+    }
+  }
+
+  const uploadImg = async (file) => {
+      let identify = file.name + '__' + Date.now();
+      let imgURL;
+      await storage.ref(`images/${identify}`).put(file);
+      await storage.ref('images').child(identify).getDownloadURL().then(url => {
+          imgURL = url;
+      })
+      setVocabularyCreateModalContent({
+        ...vocabularyCreateModalContent,
+        image: imgURL
+      })
+      return imgURL
+  }
+
+  const uploadVoiceLink = async (file) => {
+      let identify = file.name + '__' + Date.now();
+      let voiceURL;
+      await storage.ref(`voices/${identify}`).put(file);
+      await storage.ref('voices').child(identify).getDownloadURL().then(url => {
+          voiceURL = url;
+      })
+      setVocabularyCreateModalContent({
+        ...vocabularyCreateModalContent,
+        voice_link: voiceURL
+      })
+      return voiceURL
+  }
+
   return (
     <>
       {
@@ -474,6 +552,10 @@ const LessonsView = (props) => {
                   <TabPane tab="Vocabulary" key="tabVocabulary">
                     {
                       vocabularyDataSource.length > 0 ?
+                        <>
+                        <Button onClick={showVocabularyCreateModal} type="text" style={{ border: 'none', color: 'blue', marginBottom: '20px', marginLeft: '0'}} size={"large"}>
+                          <PlusOutlined/>Add new vocabulary
+                        </Button>
                         <Row justify="center">
                           <Table
                             dataSource={vocabularyDataSource}
@@ -482,7 +564,78 @@ const LessonsView = (props) => {
                               position: ['bottomRight'],
                               pageSize: 10
                             }}
+                            style={{ width: '98%'}}
                           />
+                          <Modal
+                            visible={isVocabularyCreateModalVisible}
+                            width={900}
+                            title="Create new vocabulary"
+                            onCancel={() => {
+                              setVocabularyCreateModalContent({})
+                              setVocabularyCreateModalVisible(false)
+                            }}
+                            footer={[
+                              <Button
+                                key="submit"
+                                form="vocaCreateForm"
+                                default
+                                loading={isSomethingLoading}
+                                htmlType="submit"
+                              >
+                                Create
+                              </Button>
+                            ]}
+                          >
+                            <Form
+                                id="vocaCreateForm"
+                                name="vocaCreateForm"
+                                onFinish={onVocabularyCreateFormFinish}
+                                onFinishFailed={(e) => console.log(e)}
+                              >
+                                <h3>Vocabulary</h3>
+                                <Form.Item
+                                  name="vocabulary"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                >
+                                  <Input placeholder="vocabulary"/>
+                                </Form.Item>
+                                <Form.Item
+                                  name="description"
+                                  rules={[{ required: true, message: 'This field is required!' }]}
+                                >
+                                  <Input placeholder="description"/>
+                                </Form.Item>
+                                <Upload
+                                  listType="picture-card"
+                                  showUploadList={false}
+                                  action={uploadVoiceLink}
+                                  onChange={handleVocaImageChange}
+                                >
+                                  {
+                                    vocabularyCreateModalContent.voice_link ? <audio key={vocabularyCreateModalContent.voice_link} controls><source src={vocabularyModalContent.voice_link} type="audio/mpeg"/></audio> :
+                                    <div>
+                                      <PlusOutlined />
+                                      <div style={{ marginTop: 8 }}>Upload</div>
+                                    </div>
+                                  }
+                                </Upload>
+                                <Upload
+                                  listType="picture-card"
+                                  showUploadList={false}
+                                  action={uploadImg}
+                                  beforeUpload={beforeUpload}
+                                  onChange={handleVocaImageChange}
+                                >
+                                  {
+                                    vocabularyCreateModalContent.image ? <img src={vocabularyCreateModalContent.image} style={{ width: '100%' }} alt={vocabularyCreateModalContent.image} /> :
+                                    <div>
+                                      <PlusOutlined />
+                                      <div style={{ marginTop: 8 }}>Upload</div>
+                                    </div>
+                                  }
+                                </Upload>
+                            </Form>
+                          </Modal>
                           <Modal
                             visible={isVocabularyUpdateModalVisible}
                             width={900}
@@ -498,7 +651,7 @@ const LessonsView = (props) => {
                                 htmlType="submit"
                               >
                                 Submit
-                          </Button>
+                              </Button>
                             ]}
                           >
                             <div
@@ -554,7 +707,8 @@ const LessonsView = (props) => {
                               </Form>
                             </div>
                           </Modal>
-                        </Row> :
+                        </Row>
+                        </> :
                         <Row justify="center" align="middle" style={{ width: '100%', height: '100%' }}>
                           <Space size="middle">
                             <Spin size="large" />
@@ -626,14 +780,6 @@ const LessonsView = (props) => {
                                 >
                                   <Input />
                                 </Form.Item>
-                                {/* <h3>Conversation Image</h3>
-                                <Form.Item
-                                  name="image"
-                                  rules={[{ required: true, message: 'This field is required!' }]}
-                                  initialValue={vocabularyModalContent.image}
-                                >
-                                  <Image src={vocabularyModalContent.image} width={300} height={300} />
-                                </Form.Item> */}
                                 <h3>Conversation Voice</h3>
                                 <Form.Item
                                   name="voice_link"
@@ -734,7 +880,7 @@ const LessonsView = (props) => {
                                   <Input disabled/>
                                 </Form.Item>
                                 {
-                                  quizModalContent && quizModalContent.options.map((option,index) => <div key={option.optionID}>
+                                  quizModalContent.options && quizModalContent.options.map((option,index) => <div key={option.optionID}>
                                     <h3>Answer {index+1}  </h3>
                                     <Form.Item
                                       name={`option_${index+1}`}
